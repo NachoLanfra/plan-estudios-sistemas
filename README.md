@@ -3,6 +3,8 @@
 ## Introducción
 Este proyecto surgió por la necesidad de tener un tracker visual e interactivo para saber exactamente cómo estoy parado en la carrera. 
 
+Solo sirve para el plan de estudios 2025
+
 ## Características Principales
 - **Sistema de correlatividades:** Al pasar el cursor sobre una materia, el plan oscurece el resto y resalta automáticamente qué materias previas faltan aprobar (rojo), cuáles ya están cumplidas (verde) y qué materias futuras se desbloquean (violeta).
 - **Cálculo automático:** Muestra en tiempo real el porcentaje de avance de la carrera y el promedio general según las notas ingresadas.
