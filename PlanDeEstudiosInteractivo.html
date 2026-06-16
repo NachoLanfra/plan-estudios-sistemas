@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan de Estudios — Ing. Sistemas UNICEN</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
+
+  :root {
+	/* colores para hover */
+    --h-prereq-missing-fg:  #f87171;
+    --h-prereq-missing-bg:  #2a0e0e;
+    --h-prereq-missing-br:  #7f1d1d;
+
+    --h-prereq-ok-fg:       #34d399;
+    --h-prereq-ok-bg:       #081a12;
+    --h-prereq-ok-br:       #15432e;
+
+    --h-unlocks-fg:         #a78bfa;
+    --h-unlocks-bg:         #140e28;
+    --h-unlocks-br:         #3b2d7a;
+
+    --bg:       #0d0d10;
+    --bg2:      #141417;
+    --bg3:      #1b1b1f;
+    --border:   #26262d;
+    --border2:  #35353e;
+    --text:     #e2e2e8;
+    --text2:    #7e7e96;
+    --text3:    #4a4a60;
+    --accent:   #7c6fcd;
+
+    /* estados */
+    --c-none-fg:   #4a4a60;
+    --c-none-bg:   #141417;
+    --c-none-br:   #26262d;
+
+    --c-curso-fg:  #60a5fa;   /* azul */
+    --c-curso-bg:  #0a1628;
+    --c-curso-br:  #1a3560;
+
+    --c-apro-fg:   #fbbf24;   /* naranja */
+    --c-apro-bg:   #1e1508;
+    --c-apro-br:   #4a3510;
+
+    --c-fin-fg:    #34d399;   /* verde */
+    --c-fin-bg:    #081a12;
+    --c-fin-br:    #15432e;
+
+    --c-locked-fg: #3a3a4a;
+    --c-locked-bg: #0f0f12;
+    --c-locked-br: #1e1e26;
+
+    /* colores para hover */
+    --h-unlocks-bg: #140e28;
+    --h-unlocks-br: #3b2d7a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    display: flex; align-items: center; gap: 12px;
+    height: 52px;
+  }
+  .topbar-title {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 13px; font-weight: 500;
+    color: var(--text); letter-spacing: -0.02em;
+    margin-right: auto;
+  }
+  .topbar-title span { color: var(--text3); font-weight: 400; }
+
+  .stat-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: 6px; padding: 4px 10px;
+    font-size: 12px; color: var(--text2);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .stat-pill b { color: var(--text); font-weight: 500; }
+
+  .btn {
+    display: flex; align-items: center; gap: 5px;
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: var(--bg2); color: var(--text2);
+    font-size: 12px; font-family: 'IBM Plex Sans', sans-serif;
+    cursor: pointer; transition: all .15s; white-space: nowrap;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--text); background: var(--bg3); }
+  .btn-accent { border-color: var(--accent); color: var(--accent); }
+  .btn-accent:hover { background: #16122a; }
+
+  /* ── LAYOUT ── */
+  .main { max-width: 1120px; margin: 0 auto; padding: 24px; }
+
+  /* ── LEGEND ── */
+  .legend {
+    display: flex; gap: 24px; margin-bottom: 24px;
+    flex-wrap: wrap; align-items: center;
+  }
+  .leg { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+  .leg-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── PROGRESS ── */
+  .progress-wrap { margin-bottom: 24px; }
+  .progress-bar-bg { height: 2px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--c-fin-fg));
+    border-radius: 2px; transition: width .5s ease;
+  }
+
+  /* ── YEAR ── */
+  .year-section { margin-bottom: 28px; }
+  .year-header { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+  .year-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px; font-weight: 500;
+    color: var(--text3); letter-spacing: 0.12em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .year-line { flex: 1; height: 1px; background: var(--border); }
+
+  .cuatri-block { margin-bottom: 10px; }
+  .cuatri-label {
+    font-size: 10px; color: var(--text3);
+    font-family: 'IBM Plex Mono', monospace;
+    margin-bottom: 7px; letter-spacing: 0.05em;
+  }
+  .materias-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+    gap: 5px;
+  }
+
+  /* ── MATERIA CARD ── */
+  .mc {
+    border-radius: 7px; border: 1px solid var(--c-none-br);
+    background: var(--c-none-bg);
+    padding: 9px 11px; cursor: pointer;
+    transition: border-color .12s, background .12s, box-shadow .12s, transform .1s, opacity .2s, filter .2s;
+    position: relative; user-select: none;
+  }
+  .mc:hover:not(.lk) { transform: translateY(-1px); }
+  .mc.lk { opacity: .35; cursor: not-allowed; }
+
+  /* estado base */
+  .mc.s1  { background: var(--c-curso-bg); border-color: var(--c-curso-br); }
+  .mc.s2  { background: var(--c-apro-bg);  border-color: var(--c-apro-br);  }
+  .mc.s3,
+  .mc.s4  { background: var(--c-fin-bg);   border-color: var(--c-fin-br);   }
+  .mc.lk  { background: var(--c-locked-bg);border-color: var(--c-locked-br);}
+
+/* ── HOVER HIGHLIGHTS ── */
+  
+  /* Atenuar todo lo que no está relacionado */
+  #plan.hover-active .mc:not(.h-self):not(.h-miss):not(.h-ok):not(.h-unlocks) {
+    opacity: 0.25;
+    filter: grayscale(0.8);
+    pointer-events: none;
+  }
+
+  /* Resaltar la materia actual SIN pisar su color original */
+  .mc.h-self {
+    transform: translateY(-3px) scale(1.02);
+    z-index: 10;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+
+  /* Prerequisitos faltantes (colores suaves) */
+  .mc.h-miss {
+    background: var(--h-prereq-missing-bg) !important;
+    border-color: var(--h-prereq-missing-br) !important;
+    box-shadow: 0 0 0 1px var(--h-prereq-missing-br);
+    z-index: 5;
+  }
+  
+  /* Prerequisitos cumplidos (colores suaves) */
+  .mc.h-ok {
+    background: var(--h-prereq-ok-bg) !important;
+    border-color: var(--h-prereq-ok-br) !important;
+    box-shadow: 0 0 0 1px var(--h-prereq-ok-br);
+    z-index: 5;
+  }
+  
+  /* Las que se desbloquean */
+  .mc.h-unlocks {
+    background: var(--h-unlocks-bg) !important;
+    border-color: var(--h-unlocks-br) !important;
+    box-shadow: 0 0 0 1px var(--h-unlocks-br);
+    z-index: 5;
+  }
+
+  /* colores de texto para hover */
+  .mc.h-miss .mc-name { color: var(--h-prereq-missing-fg) !important; }
+  .mc.h-ok   .mc-name { color: var(--h-prereq-ok-fg) !important; }
+  .mc.h-unlocks .mc-name { color: var(--h-unlocks-fg) !important; }
+
+  /* nombre */
+  .mc-name { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.35; transition: color .12s; }
+  .mc.s1  .mc-name { color: var(--c-curso-fg); }
+  .mc.s2  .mc-name { color: var(--c-apro-fg);  }
+  .mc.s3  .mc-name,
+  .mc.s4  .mc-name { color: var(--c-fin-fg);   }
+  .mc.lk  .mc-name { color: var(--c-locked-fg);}
+
+  .mc-meta { display: flex; align-items: center; justify-content: space-between; margin-top: 5px; }
+  .mc-code {
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--text3);
+  }
+
+  .mc-badge {
+    font-size: 9px; font-weight: 500; padding: 1px 5px;
+    border-radius: 3px; font-family: 'IBM Plex Mono', monospace;
+    border: 1px solid transparent;
+  }
+  .b-none    { color: var(--text3);       border-color: var(--border); }
+  .b-locked  { color: var(--text3);       border-color: var(--border); border-style: dashed; }
+  .b-curso   { color: var(--c-curso-fg);  border-color: var(--c-curso-br); background: var(--c-curso-bg); }
+  .b-apro    { color: var(--c-apro-fg);   border-color: var(--c-apro-br);  background: var(--c-apro-bg);  }
+  .b-fin     { color: var(--c-fin-fg);    border-color: var(--c-fin-br);   background: var(--c-fin-bg);   }
+
+  .mc-nota {
+    font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 500;
+    padding: 0px 5px; border-radius: 3px; margin-left: 4px;
+    color: var(--c-fin-fg); background: var(--c-fin-bg); border: 1px solid var(--c-fin-br);
+  }
+  .audés-tag { font-size: 9px; color: var(--text3); font-family: 'IBM Plex Mono', monospace; margin-left: 4px; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200; display: none;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(3px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border2);
+    border-radius: 12px; padding: 20px;
+    width: 310px; max-width: 95vw;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  }
+  .modal-title { font-size: 13px; font-weight: 500; color: var(--text); margin-bottom: 3px; line-height: 1.4; }
+  .modal-code  { font-family: 'IBM Plex Mono', monospace; font-size: 10px; color: var(--text3); margin-bottom: 14px; }
+  .modal-section { font-size: 10px; color: var(--text3); margin-bottom: 6px; text-transform: uppercase; letter-spacing: .08em; font-family: 'IBM Plex Mono', monospace; }
+  .modal-opts { display: flex; flex-direction: column; gap: 4px; margin-bottom: 14px; }
+  .modal-opt {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 10px; border-radius: 6px;
+    border: 1px solid var(--border); background: var(--bg3);
+    color: var(--text2); font-size: 12px; cursor: pointer;
+    transition: all .1s; font-family: 'IBM Plex Sans', sans-serif; text-align: left;
+  }
+  .modal-opt:hover:not(.opt-disabled) { border-color: var(--border2); color: var(--text); }
+  .modal-opt.opt-active  { border-color: var(--accent); color: var(--text); background: #16122a; }
+  .modal-opt.opt-disabled { opacity: .3; cursor: not-allowed; }
+
+  .nota-section { margin-bottom: 14px; }
+  .nota-label { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .nota-row { display: flex; gap: 8px; align-items: center; }
+  .nota-input {
+    width: 80px; padding: 6px 10px; border-radius: 6px;
+    border: 1px solid var(--border2); background: var(--bg3);
+    color: var(--text); font-size: 13px;
+    font-family: 'IBM Plex Mono', monospace; outline: none;
+  }
+  .nota-input:focus { border-color: var(--accent); }
+  .nota-save {
+    padding: 6px 12px; border-radius: 6px;
+    border: 1px solid var(--accent); background: #16122a;
+    color: var(--accent); font-size: 12px; cursor: pointer; transition: all .12s;
+  }
+  .nota-save:hover { background: #1e1838; }
+
+  .prereq-box {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 8px 10px;
+    font-size: 11px; color: var(--text2); line-height: 1.7; margin-bottom: 12px;
+  }
+  .prereq-box .err { color: #f87171; }
+  .prereq-box .warn { color: var(--c-apro-fg); }
+  .prereq-box .ok  { color: var(--c-fin-fg); }
+
+  .modal-footer { display: flex; justify-content: flex-end; }
+  .modal-close {
+    padding: 6px 14px; border-radius: 6px;
+    border: 1px solid var(--border); background: transparent;
+    color: var(--text2); font-size: 12px; cursor: pointer;
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+  .modal-close:hover { background: var(--bg3); color: var(--text); }
+  #import-input { display: none; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-title">plan.ing-sistemas <span>/ UNICEN 2023</span></div>
+  <div class="stat-pill">promedio <b id="s-prom">—</b></div>
+  <div class="stat-pill">avance <b id="s-pct">0%</b></div>
+  <button class="btn btn-accent" onclick="exportJSON()">↓ Exportar JSON</button>
+  <button class="btn" onclick="document.getElementById('import-input').click()">↑ Importar JSON</button>
+  <input type="file" id="import-input" accept=".json" onchange="importJSON(event)">
+</div>
+
+<div class="main">
+
+  <div class="legend">
+    <div class="leg"><div class="leg-dot" style="background:var(--c-none-br)"></div>Sin cursar</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-curso-fg)"></div>Cursando</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-apro-fg)"></div>Aprobada (cursada)</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-fin-fg)"></div>Finalizada</div>
+    <div class="leg"><div class="leg-dot" style="background:var(--c-locked-br);opacity:.6"></div>Bloqueada</div>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar-bg"><div class="progress-bar-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+
+  <div id="plan"></div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="handleOverlayClick(event)">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-code"  id="modal-code"></div>
+    <div class="modal-section">Estado</div>
+    <div class="modal-opts">
+      <button class="modal-opt" id="opt0" onclick="setEstado(0)">⬜ &nbsp;Sin cursar</button>
+      <button class="modal-opt" id="opt1" onclick="setEstado(1)">🟦 &nbsp;Cursando</button>
+      <button class="modal-opt" id="opt2" onclick="setEstado(2)">🟧 &nbsp;Aprobada (cursada)</button>
+      <button class="modal-opt" id="opt3" onclick="setEstado(3)">🟩 &nbsp;Finalizada (promoción)</button>
+      <button class="modal-opt" id="opt4" onclick="setEstado(4)">🟩 &nbsp;Finalizada (examen)</button>
+    </div>
+    <div class="nota-section" id="nota-section" style="display:none">
+      <div class="nota-label">Nota final (1 – 10)</div>
+      <div class="nota-row">
+        <input class="nota-input" id="nota-input" type="number" min="1" max="10" step="0.1" placeholder="—">
+        <button class="nota-save" onclick="saveNota()">Guardar</button>
+      </div>
+    </div>
+    <div class="prereq-box" id="prereq-box"></div>
+    <div class="modal-footer">
+      <button class="modal-close" onclick="closeModal()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const MATERIAS = [
+  {id:"6111",name:"Introducción a la Programación I",y:1,c:1,pre:[],au:true},
+  {id:"6112",name:"Introducción al Álgebra",y:1,c:1,pre:[],au:true},
+  {id:"6113",name:"Introducción a los Sistemas Informáticos",y:1,c:1,pre:[],au:true},
+  {id:"6114",name:"Inglés",y:1,c:1,pre:[],au:true},
+  {id:"6121",name:"Diseño Lógico",y:1,c:2,pre:["6113","6112"],au:true},
+  {id:"6122",name:"Introducción a la Programación II",y:1,c:2,pre:["6111"],au:true},
+  {id:"6123",name:"Lenguajes Formales y Autómatas",y:1,c:2,pre:["6112"],au:false},
+  {id:"6124",name:"Cálculo I",y:1,c:2,pre:[],au:true},
+  {id:"6211",name:"Arquitectura de Computadoras I",y:2,c:1,pre:["6121"],au:true},
+  {id:"6212",name:"Análisis y Diseño de Algoritmos I",y:2,c:1,pre:["6122","6124","6112"],au:true},
+  {id:"6213",name:"Programación Orientada a Objetos",y:2,c:1,pre:["6122"],au:true},
+  {id:"6214",name:"Álgebra Lineal",y:2,c:1,pre:["6112"],au:false},
+  {id:"6221",name:"Redes de Computadoras I",y:2,c:2,pre:["6122","6113"],au:true},
+  {id:"6222",name:"Metodologías de Desarrollo de Software",y:2,c:2,pre:["6213"],au:true},
+  {id:"6223",name:"Análisis y Diseño de Algoritmos II",y:2,c:2,pre:["6212"],au:true},
+  {id:"6224",name:"Cálculo II",y:2,c:2,pre:["6124"],au:false},
+  {id:"6311",name:"Sistemas Operativos",y:3,c:1,pre:["6211","6223"],au:true},
+  {id:"6312",name:"Base de Datos I",y:3,c:1,pre:["6212"],au:true},
+  {id:"6313",name:"Física I",y:3,c:1,pre:["6214"],au:false},
+  {id:"6314",name:"Lenguajes y Paradigmas",y:3,c:1,pre:["6211"],au:false},
+  {id:"6321",name:"Programación WEB",y:3,c:2,pre:["6311","6312","6222"],au:true},
+  {id:"6322",name:"Base de Datos II",y:3,c:2,pre:["6312"],au:false},
+  {id:"6323",name:"Probabilidad y Estadística",y:3,c:2,pre:["6124"],au:false},
+  {id:"6324",name:"Ingeniería de Software I",y:3,c:2,pre:["6311","6312","6222"],au:false},
+  {id:"6411",name:"Organización y Gestión Empresarial",y:4,c:1,pre:["6222","6323"],au:false},
+  {id:"6412",name:"Teoría de la Información",y:4,c:1,pre:["6323","6214"],au:false},
+  {id:"6413",name:"Redes de Computadoras II",y:4,c:1,pre:["6221"],au:false},
+  {id:"6414",name:"Física II",y:4,c:1,pre:["6313","6224"],au:false},
+  {id:"6421",name:"Calidad de Software",y:4,c:2,pre:["6324"],au:false},
+  {id:"6422",name:"Arquitectura de Computadoras II",y:4,c:2,pre:["6211"],au:false},
+  {id:"6423",name:"Fundamentos de la Ciencia de Datos",y:4,c:2,pre:["6323","6312"],au:false},
+  {id:"6424",name:"Compiladores e Intérpretes",y:4,c:2,pre:["6314"],au:false},
+  {id:"6511",name:"Ingeniería de Software II",y:5,c:1,pre:["6421"],au:false},
+  {id:"6512",name:"Ciberseguridad",y:5,c:1,pre:["6221","6323","6223"],au:false},
+  {id:"6513",name:"Inteligencia Artificial",y:5,c:1,pre:["6423","6323","6223"],au:false},
+  {id:"6521",name:"Formulación y Evaluación de Proyectos TICs",y:5,c:2,pre:["6411"],au:false},
+  {id:"6522",name:"Ética y Legislación de la Práctica Profesional",y:5,c:2,pre:["6411"],au:false},
+  {id:"6523",name:"Práctica Profesional Supervisada y Proyecto Integrador",y:5,c:2,pre:["6511","6512","6513"],au:false},
+];
+
+const SK = 'isys_local_v3';
+let ST = {};
+MATERIAS.forEach(m => ST[m.id] = {s:0, nota:null});
+let menuId = null;
+
+function loadLS(){
+  try {
+    const raw = localStorage.getItem(SK);
+    if(raw){ const d=JSON.parse(raw); Object.keys(d).forEach(k=>{ if(ST[k]) ST[k]=d[k]; }); }
+  } catch(e){}
+}
+function saveLS(){ try{ localStorage.setItem(SK, JSON.stringify(ST)); }catch(e){} }
+
+function exportJSON(){
+  const data = { version:3, timestamp: new Date().toISOString(), state: ST };
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'plan_estudios_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+}
+
+function importJSON(e){
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      const src = data.state || data;
+      Object.keys(src).forEach(k=>{ if(ST[k]) ST[k]={ s:src[k].s, nota:src[k].nota }; });
+      saveLS(); render(); alert('Importación exitosa ✓');
+    } catch(err){ alert('Error al leer el archivo JSON.'); }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+function getName(id){ const m=MATERIAS.find(x=>x.id===id); return m?m.name:id; }
+function canCursar(m)  { return m.pre.every(id=>ST[id].s>=2); }
+function canApprove(m) { return m.pre.every(id=>ST[id].s>=3); }
+function isLocked(m)   { return ST[m.id].s===0 && !canCursar(m); }
+
+/* ── HOVER bidireccional ── */
+function enterMateria(id){
+  const m = MATERIAS.find(x=>x.id===id);
+  if(!m) return;
+
+  // Activamos el modo hover general para poder apagar el resto
+  document.getElementById('plan').classList.add('hover-active');
+
+  // Resaltamos la materia que tiene el mouse encima
+  const selfEl = document.getElementById('mc-'+id);
+  if(selfEl) selfEl.classList.add('h-self');
+
+  // prereqs (hacia atrás)
+  const prereqMiss = new Set();
+  const prereqOk   = new Set();
+  function traverseBack(cid){
+    const cm = MATERIAS.find(x=>x.id===cid); if(!cm) return;
+    cm.pre.forEach(pid=>{
+      if(ST[pid].s < 2) prereqMiss.add(pid);
+      else              prereqOk.add(pid);
+      traverseBack(pid);
+    });
+  }
+  traverseBack(id);
+
+  // materias que se desbloquean con esta (hacia adelante, directas)
+  const unlocks = new Set();
+  MATERIAS.forEach(other=>{
+    if(other.pre.includes(id)) unlocks.add(other.id);
+  });
+
+  prereqMiss.forEach(pid=>{ const el=document.getElementById('mc-'+pid); if(el) el.classList.add('h-miss'); });
+  prereqOk.forEach(pid=>{   const el=document.getElementById('mc-'+pid); if(el) el.classList.add('h-ok');   });
+  unlocks.forEach(uid=>{
+    if(!prereqMiss.has(uid) && !prereqOk.has(uid)){
+      const el=document.getElementById('mc-'+uid); if(el) el.classList.add('h-unlocks');
+    }
+  });
+}
+
+function leaveMateria(){
+  // Apagamos el modo hover
+  document.getElementById('plan').classList.remove('hover-active');
+
+  document.querySelectorAll('.mc').forEach(el=>{
+    el.classList.remove('h-miss','h-ok','h-unlocks','h-self');
+  });
+}
+
+/* ── MODAL ── */
+function openModal(id){
+  const m = MATERIAS.find(x=>x.id===id);
+  if(!m || isLocked(m)) return;
+  menuId = id;
+  const cur = ST[id];
+
+  document.getElementById('modal-title').textContent = m.name + (m.au?' · AUDeS':'');
+  document.getElementById('modal-code').textContent  = m.id;
+
+  [0,1,2,3,4].forEach(i=>{
+    const el = document.getElementById('opt'+i);
+    el.classList.toggle('opt-active', cur.s===i);
+    el.classList.remove('opt-disabled');
+  });
+  if(!canCursar(m)  && cur.s<1) [1,2].forEach(i=>document.getElementById('opt'+i).classList.add('opt-disabled'));
+  if(!canApprove(m) && cur.s<3) [3,4].forEach(i=>document.getElementById('opt'+i).classList.add('opt-disabled'));
+
+  const ns=document.getElementById('nota-section');
+  const ni=document.getElementById('nota-input');
+  if(cur.s>=3){ ns.style.display='block'; ni.value=cur.nota!=null?cur.nota:''; }
+  else { ns.style.display='none'; ni.value=''; }
+
+  const pb=document.getElementById('prereq-box');
+  if(m.pre.length){
+    const missCur = m.pre.filter(id=>ST[id].s<2).map(getName);
+    const missApp = m.pre.filter(id=>ST[id].s<3).map(getName);
+    let txt='';
+    if(missCur.length) txt+=`<span class="err">✗ Falta aprobar (cursada):</span> ${missCur.join(', ')}<br>`;
+    if(missApp.length && cur.s>=2) txt+=`<span class="warn">⚠ Para finalizar, falta final de:</span> ${missApp.join(', ')}<br>`;
+    if(!txt) txt=`<span class="ok">✓ Todos los requisitos al día</span>`;
+    pb.innerHTML=txt;
+  } else {
+    pb.innerHTML='<span class="ok">✓ Sin requisitos previos</span>';
+  }
+
+  document.getElementById('modal-overlay').classList.add('open');
+}
+
+function handleOverlayClick(e){
+  if(e.target===document.getElementById('modal-overlay')) closeModal();
+}
+
+function setEstado(s){
+  if(!menuId) return;
+  if(document.getElementById('opt'+s).classList.contains('opt-disabled')) return;
+
+  ST[menuId].s = s;
+  if(s<3) ST[menuId].nota = null;
+
+  function cascade(mId){
+    MATERIAS.forEach(other=>{
+      if(!other.pre.includes(mId)) return;
+      let changed=false;
+      if(ST[other.id].s>=3 && !canApprove(other)){ ST[other.id].s=2; changed=true; }
+      if(ST[other.id].s>=1 && !canCursar(other)) { ST[other.id].s=0; ST[other.id].nota=null; changed=true; }
+      if(changed) cascade(other.id);
+    });
+  }
+  cascade(menuId);
+
+  [0,1,2,3,4].forEach(i=>document.getElementById('opt'+i).classList.toggle('opt-active',i===s));
+  const ns=document.getElementById('nota-section');
+  const ni=document.getElementById('nota-input');
+  if(s>=3){ ns.style.display='block'; ni.value=ST[menuId].nota!=null?ST[menuId].nota:''; ni.focus(); }
+  else { ns.style.display='none'; }
+
+  saveLS(); render();
+}
+
+function saveNota(){
+  if(!menuId) return;
+  const v=parseFloat(document.getElementById('nota-input').value);
+  ST[menuId].nota=(!isNaN(v)&&v>=1&&v<=10)?Math.round(v*10)/10:null;
+  saveLS(); render(); closeModal();
+}
+
+function closeModal(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  menuId=null;
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){ closeModal(); return; }
+  if(e.key==='Enter' && menuId && document.getElementById('modal-overlay').classList.contains('open')){
+    const ns=document.getElementById('nota-section');
+    if(ns.style.display!=='none') saveNota(); else closeModal();
+  }
+});
+
+/* ── RENDER ── */
+function render(){
+  const container=document.getElementById('plan');
+  let html='';
+  for(let y=1;y<=5;y++){
+    html+=`<div class="year-section">
+      <div class="year-header"><div class="year-label">${y}° año</div><div class="year-line"></div></div>`;
+    for(let c=1;c<=2;c++){
+      const mats=MATERIAS.filter(m=>m.y===y&&m.c===c);
+      if(!mats.length) continue;
+      html+=`<div class="cuatri-block">
+        <div class="cuatri-label">${c===1?'1er':'2do'} cuatrimestre</div>
+        <div class="materias-grid">`;
+      mats.forEach(m=>{
+        const {s,nota}=ST[m.id];
+        const lk=isLocked(m);
+        let cls='mc';
+        if(lk)               cls+=' lk';
+        else if(s===1)        cls+=' s1';
+        else if(s===2)        cls+=' s2';
+        else if(s>=3)         cls+=' s3';
+
+        let badge='';
+        if(lk)   badge=`<span class="mc-badge b-locked">bloqueada</span>`;
+        else if(s===0) badge=`<span class="mc-badge b-none">sin cursar</span>`;
+        else if(s===1) badge=`<span class="mc-badge b-curso">cursando</span>`;
+        else if(s===2) badge=`<span class="mc-badge b-apro">aprobada</span>`;
+        else if(s===3) badge=`<span class="mc-badge b-fin">promo</span>`;
+        else if(s===4) badge=`<span class="mc-badge b-fin">examen</span>`;
+
+        const notaEl=(s>=3&&nota!=null)?`<span class="mc-nota">${nota}</span>`:'';
+        const au=m.au?`<span class="audés-tag">AUDeS</span>`:'';
+        const click=lk?'':'openModal(\''+m.id+'\')';
+
+        html+=`<div id="mc-${m.id}" class="${cls}"
+          onclick="${click}"
+          onmouseenter="enterMateria('${m.id}')"
+          onmouseleave="leaveMateria()">
+          <div class="mc-name">${m.name}${au}</div>
+          <div class="mc-meta">
+            <span class="mc-code">${m.id}</span>
+            <span style="display:flex;align-items:center;gap:3px">${badge}${notaEl}</span>
+          </div>
+        </div>`;
+      });
+      html+=`</div></div>`;
+    }
+    html+=`</div>`;
+  }
+  container.innerHTML=html;
+
+  const fin=MATERIAS.filter(m=>ST[m.id].s>=3).length;
+  const notas=MATERIAS.filter(m=>ST[m.id].s>=3&&ST[m.id].nota!=null).map(m=>ST[m.id].nota);
+  const prom=notas.length?(notas.reduce((a,b)=>a+b,0)/notas.length).toFixed(2):'—';
+  const pct=Math.round(fin/MATERIAS.length*100);
+
+  document.getElementById('s-prom').textContent=prom;
+  document.getElementById('s-pct').textContent=pct+'%';
+  document.getElementById('prog-fill').style.width=pct+'%';
+}
+
+loadLS();
+render();
+</script>
+</body>
+</html>
