@@ -4,23 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Plan de Estudios — Ing. Sistemas UNICEN</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap');
 
   :root {
-	/* colores para hover */
-    --h-prereq-missing-fg:  #f87171;
-    --h-prereq-missing-bg:  #2a0e0e;
-    --h-prereq-missing-br:  #7f1d1d;
-
-    --h-prereq-ok-fg:       #34d399;
-    --h-prereq-ok-bg:       #081a12;
-    --h-prereq-ok-br:       #15432e;
-
-    --h-unlocks-fg:         #a78bfa;
-    --h-unlocks-bg:         #140e28;
-    --h-unlocks-br:         #3b2d7a;
-
     --bg:       #0d0d10;
     --bg2:      #141417;
     --bg3:      #1b1b1f;
@@ -53,8 +41,17 @@
     --c-locked-br: #1e1e26;
 
     /* colores para hover */
-    --h-unlocks-bg: #140e28;
-    --h-unlocks-br: #3b2d7a;
+    --h-prereq-missing-fg:  #f87171;
+    --h-prereq-missing-bg:  #2a0e0e;
+    --h-prereq-missing-br:  #7f1d1d;
+
+    --h-prereq-ok-fg:       #34d399;
+    --h-prereq-ok-bg:       #081a12;
+    --h-prereq-ok-br:       #15432e;
+
+    --h-unlocks-fg:         #a78bfa;
+    --h-unlocks-bg:         #140e28;
+    --h-unlocks-br:         #3b2d7a;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -170,46 +167,59 @@
   
   /* Atenuar todo lo que no está relacionado */
   #plan.hover-active .mc:not(.h-self):not(.h-miss):not(.h-ok):not(.h-unlocks) {
-    opacity: 0.25;
-    filter: grayscale(0.8);
+    opacity: 0.2;
+    filter: grayscale(1);
     pointer-events: none;
   }
 
-  /* Resaltar la materia actual SIN pisar su color original */
+  /* Materia actual: respetamos su color original pero le subimos el brillo para que resalte */
   .mc.h-self {
     transform: translateY(-3px) scale(1.02);
     z-index: 10;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    filter: brightness(1.25);
   }
 
-  /* Prerequisitos faltantes (colores suaves) */
+  /* Prerequisitos faltantes */
   .mc.h-miss {
-    background: var(--h-prereq-missing-bg) !important;
-    border-color: var(--h-prereq-missing-br) !important;
-    box-shadow: 0 0 0 1px var(--h-prereq-missing-br);
+    background: #1a0b0b !important;
+    border-color: #ef4444 !important;
     z-index: 5;
   }
   
-  /* Prerequisitos cumplidos (colores suaves) */
+  /* Prerequisitos cumplidos */
   .mc.h-ok {
-    background: var(--h-prereq-ok-bg) !important;
-    border-color: var(--h-prereq-ok-br) !important;
-    box-shadow: 0 0 0 1px var(--h-prereq-ok-br);
+    background: #061710 !important;
+    border-color: #10b981 !important;
     z-index: 5;
   }
   
   /* Las que se desbloquean */
   .mc.h-unlocks {
-    background: var(--h-unlocks-bg) !important;
-    border-color: var(--h-unlocks-br) !important;
-    box-shadow: 0 0 0 1px var(--h-unlocks-br);
+    background: #120b24 !important;
+    border-color: #8b5cf6 !important;
     z-index: 5;
   }
 
-  /* colores de texto para hover */
-  .mc.h-miss .mc-name { color: var(--h-prereq-missing-fg) !important; }
-  .mc.h-ok   .mc-name { color: var(--h-prereq-ok-fg) !important; }
-  .mc.h-unlocks .mc-name { color: var(--h-unlocks-fg) !important; }
+  /* ── EL SECRETO: Unificar los colores internos para evitar choques visuales ── */
+  
+  /* Todo lo faltante se tiñe de rojo */
+  .mc.h-miss .mc-name, .mc.h-miss .audés-tag { color: #fca5a5 !important; }
+  .mc.h-miss .mc-badge, .mc.h-miss .mc-nota {
+    background: #3f1111 !important; border-color: #ef4444 !important; color: #fca5a5 !important;
+  }
+
+  /* Todo lo cumplido se tiñe de verde */
+  .mc.h-ok .mc-name, .mc.h-ok .audés-tag { color: #6ee7b7 !important; }
+  .mc.h-ok .mc-badge, .mc.h-ok .mc-nota {
+    background: #064e3b !important; border-color: #10b981 !important; color: #6ee7b7 !important;
+  }
+
+  /* Todo lo que se desbloquea se tiñe de violeta */
+  .mc.h-unlocks .mc-name, .mc.h-unlocks .audés-tag { color: #c4b5fd !important; }
+  .mc.h-unlocks .mc-badge, .mc.h-unlocks .mc-nota {
+    background: #2e1065 !important; border-color: #8b5cf6 !important; color: #c4b5fd !important;
+  }
 
   /* nombre */
   .mc-name { font-size: 12px; font-weight: 500; color: var(--text); line-height: 1.35; transition: color .12s; }
@@ -294,7 +304,7 @@
     border-radius: 6px; padding: 8px 10px;
     font-size: 11px; color: var(--text2); line-height: 1.7; margin-bottom: 12px;
   }
-  .prereq-box .err { color: #f87171; }
+  .prereq-box .err { color: var(--h-prereq-missing-fg); }
   .prereq-box .warn { color: var(--c-apro-fg); }
   .prereq-box .ok  { color: var(--c-fin-fg); }
 
@@ -315,7 +325,11 @@
   <div class="topbar-title">plan.ing-sistemas <span>/ UNICEN 2023</span></div>
   <div class="stat-pill">promedio <b id="s-prom">—</b></div>
   <div class="stat-pill">avance <b id="s-pct">0%</b></div>
-  <button class="btn btn-accent" onclick="exportJSON()">↓ Exportar JSON</button>
+  
+  <button class="btn btn-accent" style="margin-left:auto" onclick="document.getElementById('import-excel').click()">Cargar Excel del SIU</button>
+  <input type="file" id="import-excel" accept=".xls,.xlsx" onchange="importarExcelSIU(event)" style="display:none">
+  
+  <button class="btn" onclick="exportJSON()">↓ Exportar JSON</button>
   <button class="btn" onclick="document.getElementById('import-input').click()">↑ Importar JSON</button>
   <input type="file" id="import-input" accept=".json" onchange="importJSON(event)">
 </div>
@@ -442,6 +456,89 @@ function importJSON(e){
   reader.readAsText(file);
 }
 
+/* ── IMPORTAR EXCEL DEL SIU GUARANÍ ── */
+function importarExcelSIU(e){
+  const file = e.target.files[0]; 
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    try {
+      const data = new Uint8Array(ev.target.result);
+      const workbook = XLSX.read(data, {type: 'array'});
+      const sheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[sheetName];
+      const json = XLSX.utils.sheet_to_json(sheet, {header: 1});
+
+      let headerRowIdx = -1;
+      for(let i=0; i<json.length; i++) {
+        if(json[i].some(cell => typeof cell === 'string' && cell.includes('Actividad'))) {
+          headerRowIdx = i;
+          break;
+        }
+      }
+
+      if(headerRowIdx === -1) {
+        alert("No se detectó el formato del SIU (Falta la columna 'Actividad').");
+        return;
+      }
+
+      const headers = json[headerRowIdx];
+      const actIdx = headers.findIndex(h => typeof h === 'string' && h.includes('Actividad'));
+      const tipoIdx = headers.findIndex(h => typeof h === 'string' && h.includes('Tipo'));
+      const notaIdx = headers.findIndex(h => typeof h === 'string' && h.includes('Nota'));
+      const resIdx = headers.findIndex(h => typeof h === 'string' && h.includes('Resultado'));
+
+      let materiasActualizadas = 0;
+
+      for(let i = headerRowIdx + 1; i < json.length; i++) {
+        const row = json[i];
+        if(!row || row.length === 0) continue;
+
+        const actividad = String(row[actIdx] || '');
+        const tipo = String(row[tipoIdx] || '').trim().toLowerCase();
+        const resultado = String(row[resIdx] || '').trim().toLowerCase();
+        const notaStr = String(row[notaIdx] || '').trim();
+
+        const match = actividad.match(/\((\d{4})\)/);
+        if(!match) continue;
+        const codigo = match[1];
+
+        if(resultado === 'reprobado') continue;
+
+        let nota = null;
+        if(notaStr && notaStr !== 'A' && notaStr.toLowerCase() !== 'nan') {
+          const num = parseFloat(notaStr.replace(',', '.'));
+          if(!isNaN(num)) nota = num;
+        }
+
+        let s_fila = 0;
+        if(tipo === 'en curso') s_fila = 1;
+        else if(tipo === 'regularidad' && resultado === 'aprobado') s_fila = 2;
+        else if(tipo === 'promocion' && resultado === 'promocionado') s_fila = 3;
+        else if((tipo === 'examen' || tipo === 'equivalencia') && resultado === 'aprobado') s_fila = 4;
+
+        if(ST[codigo]) {
+          if(s_fila > ST[codigo].s) {
+            ST[codigo].s = s_fila;
+            if(s_fila >= 3) ST[codigo].nota = nota;
+            materiasActualizadas++;
+          }
+        }
+      }
+
+      saveLS(); 
+      render();
+      alert(`¡Éxito! Se actualizaron ${materiasActualizadas} materias desde tu Excel. ✓`);
+    } catch(err) {
+      alert('Error al leer el archivo Excel. Asegurate de que sea el archivo original del SIU.');
+      console.error(err);
+    }
+    e.target.value = ''; 
+  };
+  reader.readAsArrayBuffer(file);
+}
+
 function getName(id){ const m=MATERIAS.find(x=>x.id===id); return m?m.name:id; }
 function canCursar(m)  { return m.pre.every(id=>ST[id].s>=2); }
 function canApprove(m) { return m.pre.every(id=>ST[id].s>=3); }
@@ -452,14 +549,11 @@ function enterMateria(id){
   const m = MATERIAS.find(x=>x.id===id);
   if(!m) return;
 
-  // Activamos el modo hover general para poder apagar el resto
   document.getElementById('plan').classList.add('hover-active');
 
-  // Resaltamos la materia que tiene el mouse encima
   const selfEl = document.getElementById('mc-'+id);
   if(selfEl) selfEl.classList.add('h-self');
 
-  // prereqs (hacia atrás)
   const prereqMiss = new Set();
   const prereqOk   = new Set();
   function traverseBack(cid){
@@ -472,7 +566,6 @@ function enterMateria(id){
   }
   traverseBack(id);
 
-  // materias que se desbloquean con esta (hacia adelante, directas)
   const unlocks = new Set();
   MATERIAS.forEach(other=>{
     if(other.pre.includes(id)) unlocks.add(other.id);
@@ -488,7 +581,6 @@ function enterMateria(id){
 }
 
 function leaveMateria(){
-  // Apagamos el modo hover
   document.getElementById('plan').classList.remove('hover-active');
 
   document.querySelectorAll('.mc').forEach(el=>{
